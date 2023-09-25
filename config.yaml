@@ -1,0 +1,7 @@
+certwatchdb:
+  host: localhost
+  password: certwatch
+server:
+  monitoringPort: 8081
+logging:
+  isDevelopment: true
