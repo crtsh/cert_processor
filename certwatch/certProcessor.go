@@ -205,7 +205,7 @@ SELECT c.ID, c.ISSUER_CA_ID, c.CERTIFICATE
 	for _, certID := range unparsableCerts {
 		cr := certRecord{certID: certID}
 		if err = tx.QueryRow(context.Background(), `
-SELECT c.ISSUER_CA_ID, x509_notAfter(c.CERTIFICATE),
+SELECT c.ISSUER_CA_ID, coalesce(nullif(x509_notAfter(c.CERTIFICATE), 'infinity'::timestamp), '1970-01-01'::date),
 		CASE WHEN x509_hasExtension(c.CERTIFICATE, '1.3.6.1.4.1.11129.2.4.3', TRUE) THEN 2 ELSE 1 END
 	FROM certificate c
 	WHERE c.ID = $1
