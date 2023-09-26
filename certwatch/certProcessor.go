@@ -147,7 +147,7 @@ SELECT c.ID, c.ISSUER_CA_ID, c.CERTIFICATE
 
 		// Parse the certificate.
 		var cert *x509.Certificate
-		if cert, err = x509.ParseCertificate(derCertificate); err != nil {
+		if cert, err = x509.ParseCertificate(derCertificate); x509.IsFatal(err) {
 			logger.Logger.Warn(
 				"ParseCertificate() failed",
 				zap.Error(err),
@@ -157,6 +157,14 @@ SELECT c.ID, c.ISSUER_CA_ID, c.CERTIFICATE
 			unparsableCerts = append(unparsableCerts, certificateID)
 
 		} else {
+			if err != nil {
+				logger.Logger.Info(
+					"ParseCertificate() failed (non-fatal)",
+					zap.Error(err),
+					zap.Int64("certificate_id", certificateID),
+				)
+			}
+
 			// Add this cert to the slice of certs.
 			certs = append(certs, certRecord{
 				certID:     certificateID,
