@@ -88,7 +88,7 @@ func processCerts() time.Duration {
 	var tx pgx.Tx
 	var rows pgx.Rows
 	var err error
-	var maxLastCertificateID, startCertificateID, endCertificateID, latestCertificateID, certificateID int64
+	var maxLastCertificateID, startCertificateID, endCertificateID, latestCertificateID, certificateID, numCerts int64
 	var issuerCAID int32
 	var derCertificate []byte
 	certs := make([]certRecord, 0)
@@ -154,6 +154,7 @@ SELECT c.ID, c.ISSUER_CA_ID, c.CERTIFICATE
 		}
 
 		// Parse the certificate.
+		numCerts++
 		var cert *x509.Certificate
 		if cert, err = x509.ParseCertificate(derCertificate); x509.IsFatal(err) {
 			logger.Logger.Warn(
@@ -423,6 +424,7 @@ done:
 
 	logger.Logger.Info(
 		"Certificates Processed",
+		zap.Int64("count", numCerts),
 		zap.Int64("start", startCertificateID),
 		zap.Int64("end", endCertificateID),
 		zap.Int64("latest", latestCertificateID),
