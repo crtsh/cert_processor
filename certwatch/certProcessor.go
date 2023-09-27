@@ -88,7 +88,7 @@ func processCerts() time.Duration {
 	var tx pgx.Tx
 	var rows pgx.Rows
 	var err error
-	var startCertificateID, endCertificateID, latestCertificateID, certificateID int64
+	var maxLastCertificateID, startCertificateID, endCertificateID, latestCertificateID, certificateID int64
 	var issuerCAID int32
 	var derCertificate []byte
 	certs := make([]certRecord, 0)
@@ -109,9 +109,17 @@ func processCerts() time.Duration {
 
 	// Determine the range of certificate IDs to process in this batch.
 	if err = tx.QueryRow(context.Background(), `
-SELECT coalesce(max(ca.LAST_CERTIFICATE_ID), 0) + 1
+SELECT coalesce(max(ca.LAST_CERTIFICATE_ID), 0)
 	FROM ca
-`).Scan(&startCertificateID); err != nil {
+`).Scan(&maxLastCertificateID); err != nil {
+		goto done
+	}
+
+	if err = tx.QueryRow(context.Background(), `
+SELECT greatest(min(c.ID), $1 + 1)
+	FROM certificate c
+	WHERE c.ID > $1
+`, maxLastCertificateID).Scan(&startCertificateID); err != nil {
 		goto done
 	}
 
