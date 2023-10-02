@@ -116,7 +116,7 @@ SELECT coalesce(max(ca.LAST_CERTIFICATE_ID), 0)
 	}
 
 	if err = tx.QueryRow(context.Background(), `
-SELECT greatest(min(c.ID), $1 + 1)
+SELECT greatest(min(c.ID), $1::bigint + 1)
 	FROM certificate c
 	WHERE c.ID > $1
 `, maxLastCertificateID).Scan(&startCertificateID); err != nil {
