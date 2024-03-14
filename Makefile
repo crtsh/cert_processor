@@ -1,7 +1,7 @@
 all: clean cert_processor
 
 cert_processor:
-	go build -o $@ -ldflags "$(shell ~/go/bin/govvv -flags | sed 's/main/github.com\/crtsh\/cert_processor\/config/g')"
+	go build -o $@ -ldflags "-X github.com/crtsh/cert_processor/config.BuildTimestamp=`date --utc +%Y-%m-%dT%H:%M:%SZ`"
 
 clean:
 	rm -f cert_processor
